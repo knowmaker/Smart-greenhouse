@@ -221,7 +221,7 @@ void loop() {
   }
   if (temphum.temperature >= 40) {
     if (flgERRHiTemp == false) {
-      sms(String("Attention: High Temperature"), String("+79265497183"));
+      sms(String("Attention: High Temperature"), String("+7926*******"));
       flgERRHiTemp = true;
     }
   }
@@ -249,17 +249,17 @@ void loop() {
     if (inputString.indexOf("LIGHT_ON") > -1) { // Проверяем полученные данные, если ON_1 включаем реле 1
       digitalWrite(LED, HIGH);
       flgManualSvet = true;
-      sms(String("LIGHT - ON"), String("+79265497183"));
+      sms(String("LIGHT - ON"), String("+7926*******"));
 
     } // Отправка SMS
     if (inputString.indexOf("LIGHT_OFF") > -1) { // Проверяем полученные данные, если OFF_1 выклюем реле 1
       digitalWrite(LED, LOW);
       flgManualSvet = false;
-      sms(String("LIGHT - OFF"), String("+79265497183"));
+      sms(String("LIGHT - OFF"), String("+7926*******"));
     }// Отправка SMS
     delay(50);
     if (inputString.indexOf("INFO") > -1) {     // Проверяем полученные данные
-      sms(String("AirTemp: " + String(temphum.temperature) + " *C " + " AirHum: " + String(temphum.humidity) + " % " + " WaterTemp " + String(ds.getTempCByIndex(0)) + " *C " + " SoilHum " + String(itogpochv) + " %"), String("+79265497183")); // Отправка SMS
+      sms(String("AirTemp: " + String(temphum.temperature) + " *C " + " AirHum: " + String(temphum.humidity) + " % " + " WaterTemp " + String(ds.getTempCByIndex(0)) + " *C " + " SoilHum " + String(itogpochv) + " %"), String("+7926*******")); // Отправка SMS
     }
     if (inputString.indexOf("DEMO") > -1) {
       digitalWrite(DIR_1, HIGH);
