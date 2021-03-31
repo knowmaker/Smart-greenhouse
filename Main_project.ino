@@ -10,6 +10,7 @@ int LED = 13;                           // Вывод управления вк�
 DS3231  rtc(SDA, SCL);
 int intVremy;
 String strVremy;
+String dattomarus = "No watering";
 
 #include <Wire.h>
 #include <LiquidCrystal_I2C.h> // Подключение библиотеки
@@ -48,7 +49,8 @@ uint16_t sensorpochv2;                              // Создание пере
 #define LED          13                     //Объявление названия ночной подсветки в теплице и её порта
 #define SVET         12                    //Объявление названия датчика света и его порта
 
-boolean WindowOpen = false;               //Переменная состояния окна
+boolean WindowOpen = false;  //Переменная состояния окна
+int grotkrwind = 30;
 boolean waterSolenoidOn = false;       //Переменная состояния соленоида
 boolean flgManualSvet = false;
 boolean flgERRHiTemp = false;
@@ -105,8 +107,8 @@ void setup() {
   rtc.begin();                         // Инициализировать rtc
 
   // Установка времени
-  rtc.setTime(19, 35, 10);              //  Установить время 16:29:00 (формат 24 часа)
-  rtc.setDate(07, 03, 2020);            //  Установить дату 31 августа 2018 года*/
+  /*rtc.setTime(15, 33, 10);              //  Установить время 16:29:00 (формат 24 часа)
+  rtc.setDate(27, 03, 2020);            //  Установить дату 31 августа 2018 года*/
 }
 void loop() {
   strVremy = rtc.getTimeStr();
@@ -181,6 +183,7 @@ void loop() {
     digitalWrite(POMPA, HIGH);
     Serial.println("Полив включен");
     lcd.setCursor(20, 3);
+    dattomarus = rtc.getDateStr();
     lcd.print("Watering On");
   }                                          //Цикл полива
   else {
@@ -204,7 +207,7 @@ void loop() {
     digitalWrite(SOLENOID, LOW);
   }
 
-  if (temphum.temperature > 26 and (WindowOpen == false)) {
+  if (temphum.temperature > grotkrwind and (WindowOpen == false)) {
     digitalWrite(DIR_1, HIGH);
     analogWrite(SPEED_1, 255);
     WindowOpen = true;                       //Цикл открывания окна
@@ -212,7 +215,7 @@ void loop() {
     analogWrite(SPEED_1, 0);
   }
 
-  if (temphum.temperature <= 26 and (WindowOpen == true)) {
+  if (temphum.temperature <= grotkrwind and (WindowOpen == true)) {
     digitalWrite(DIR_1, LOW );
     analogWrite(SPEED_1, 255);
     WindowOpen = false;                      //Цикл закрывания окна
@@ -231,6 +234,8 @@ void loop() {
   if ( pirVal == LOW and (flgManualSvet == true or ((strVremy.substring(0, 2).toInt() < 21 and strVremy.substring(0, 2).toInt() > 16) and digitalRead(SVET) == HIGH ))) {
     digitalWrite (LED, HIGH);
   }
+
+  Serial.print (flgManualSvet);
   if (pirVal == HIGH or (digitalRead(SVET) == LOW and flgManualSvet == false )) {
     digitalWrite (LED, LOW);     // вЫключение подсветки
   }
@@ -249,13 +254,13 @@ void loop() {
     if (inputString.indexOf("LIGHT_ON") > -1) { // Проверяем полученные данные, если ON_1 включаем реле 1
       digitalWrite(LED, HIGH);
       flgManualSvet = true;
-      sms(String("LIGHT - ON"), String("+7926*******"));
+      //sms(String("LIGHT - ON"), String("+7926*******"));
 
     } // Отправка SMS
     if (inputString.indexOf("LIGHT_OFF") > -1) { // Проверяем полученные данные, если OFF_1 выклюем реле 1
       digitalWrite(LED, LOW);
       flgManualSvet = false;
-      sms(String("LIGHT - OFF"), String("+7926*******"));
+      //sms(String("LIGHT - OFF"), String("+7926*******"));
     }// Отправка SMS
     delay(50);
     if (inputString.indexOf("INFO") > -1) {     // Проверяем полученные данные
@@ -266,32 +271,107 @@ void loop() {
       analogWrite(SPEED_1, 255);                       //Цикл открывания окна
       delay(7000);
       analogWrite(SPEED_1, 0);// Проверяем полученные данные
+      delay(9000);
       digitalWrite(POMPA, HIGH);
       lcd.setCursor(20, 3);
       lcd.print("Watering On");
       Serial.println("Полив включен");
       lcd.setCursor(20, 3);
       lcd.print("Watering On");
-      delay(2000);
-      digitalWrite(POMPA, LOW);
+      delay(2500);
+      digitalWrite(POMPA,LOW);
       Serial.println("Полив вЫключен");
       lcd.setCursor(20, 3);
       lcd.print("                   ");
+      delay(5500);
+      digitalWrite (SOLENOID, HIGH);
+      delay(2500);
+      digitalWrite (SOLENOID, LOW);
+      delay(2900);
+      digitalWrite (LED, HIGH);
+      delay(5000);
+      digitalWrite (LED, LOW);
+      delay(1300);
       digitalWrite(DIR_1, LOW );
       analogWrite(SPEED_1, 255);
       delay(7000);
       analogWrite(SPEED_1, 0);
-      digitalWrite (SOLENOID, HIGH);
+    }
+
+    if (inputString.indexOf("WIND_OFF") > -1) { //Закрытие окна
+      digitalWrite(DIR_1, LOW);
+      analogWrite(SPEED_1, 255);                       //Цикл закрывания окна
+      delay(7000);
+      analogWrite(SPEED_1, 0);
+    }
+
+    if (inputString.indexOf("WIND_ON") > -1) { //Открытие окна
+      digitalWrite(DIR_1, HIGH);
+      analogWrite(SPEED_1, 255);                       //Цикл открывания окна
+      delay(7000);
+      analogWrite(SPEED_1, 0);
+    }
+
+    if (inputString.indexOf("T20") > -1) { 
+      grotkrwind = 20;
+    }
+
+    if (inputString.indexOf("T25") > -1) { 
+      grotkrwind = 25;
+    }
+
+    if (inputString.indexOf("T30") > -1) {
+      grotkrwind = 30;
+    }
+
+    if (inputString.indexOf("T35") > -1) { 
+      grotkrwind = 35;
+    }
+
+    if (inputString.indexOf("T40") > -1) { 
+      grotkrwind = 40;
+    }
+
+    if (inputString.indexOf("WATER_ON") > -1) { //Включение полива на одну секунду\минуту(ориг.)
+      digitalWrite(POMPA, HIGH);
       delay(1000);
-      digitalWrite (SOLENOID, LOW);
-      digitalWrite (LED, HIGH);
-      delay(2000);
-      digitalWrite (LED, LOW);
+      digitalWrite(POMPA, LOW);
+    }
+
+    if (inputString.indexOf("SOIL_HUM") > -1) { //Влажность почвы
+      sms(String("SoilHum " + String(itogpochv) + " %"), String("+7926*******"));
+    }
+
+    if (inputString.indexOf("TEMPHUMA") > -1) { //Температура и влажность воздуха
+      sms(String("AirTemp: " + String(temphum.temperature) + " *C " + " AirHum: " + String(temphum.humidity) + " % "), String("+7926*******"));
+    }
+
+    if (inputString.indexOf("W_LEVEL") > -1) { //Уровень воды
+      if ((watern > 700) and (waterv > 700))
+      {
+        sms(String("HIGH"), String("+7926*******"));
+      }
+      if ((watern > 700) and (waterv < 700))
+      {
+        sms(String("Medium"), String("+7926*******"));
+      }
+      else {
+        sms(String("LOW"), String("+7926*******"));
+      }
+    }
+
+    if (inputString.indexOf("W_T") > -1) { //Температура воды
+      sms(String(" WaterTemp " + String(ds.getTempCByIndex(0)) + " *C "), String("+7926*******"));
+    }
+
+    if (inputString.indexOf("LAST_P") > -1) { //Последний полив
+      sms(String(dattomarus), String("+7926*******"));
     }
     if (inputString.indexOf("OK") == -1) {
       mySerial.println("AT+CMGDA=\"DEL ALL\"");
       delay(1000);
     }
+      digitalWrite(POMPA, LOW);
     inputString = "";
 
   }
