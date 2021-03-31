@@ -135,30 +135,6 @@ void loop() {
 
   pirVal = digitalRead(PIR);                       //Считывание значений с датчика движения
 
-
-  /* Serial.print("Температура воды=");
-    Serial.print(ds.getTempCByIndex(0), 0);
-    Serial.print("C;  ");
-    Serial.print("Влажность почвы1=");
-    Serial.print(sensorpochv1);
-    Serial.print("  Влажность почвы2=");
-    Serial.print(sensorpochv2);
-    Serial.print("  Влажность почвыОбщая=");
-    Serial.print(itogpochv);
-    Serial.print(";   ");
-    Serial.print("Верхний датчик=");
-    Serial.print(waterv);
-    Serial.print(";   ");
-    Serial.print("Нижний датчик=");         //Вывод показаний всех датчиков в монитор порта
-    Serial.print(watern);
-    Serial.println(";   ");
-    Serial.print("Температура воздуха=");
-    Serial.print(temphum.temperature);
-    Serial.print("C;  ");
-    Serial.print("Влажность воздуха=");
-    Serial.print(temphum.humidity);
-    Serial.println("%;   ");*/
-
   lcd.setCursor(0, 0);
   lcd.print("Air:T,C=" );
   lcd.setCursor(8, 0);
