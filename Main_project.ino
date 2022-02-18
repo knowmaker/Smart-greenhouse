@@ -63,6 +63,8 @@ int watern ;                    //Объявление названия нижн
 int itogpochv;
 
 int pirVal  ;                               //Переменная для считывания показаний с датчика движения
+
+String telnum="+792********";
 void setup() {
   Serial.begin(9600);                             //Инициализация монитора порта
   ds.begin();                                            //Инициализация датчика ds18b20 температуры воды
@@ -135,6 +137,30 @@ void loop() {
 
   pirVal = digitalRead(PIR);                       //Считывание значений с датчика движения
 
+
+  /* Serial.print("Температура воды=");
+    Serial.print(ds.getTempCByIndex(0), 0);
+    Serial.print("C;  ");
+    Serial.print("Влажность почвы1=");
+    Serial.print(sensorpochv1);
+    Serial.print("  Влажность почвы2=");
+    Serial.print(sensorpochv2);
+    Serial.print("  Влажность почвыОбщая=");
+    Serial.print(itogpochv);
+    Serial.print(";   ");
+    Serial.print("Верхний датчик=");
+    Serial.print(waterv);
+    Serial.print(";   ");
+    Serial.print("Нижний датчик=");         //Вывод показаний всех датчиков в монитор порта
+    Serial.print(watern);
+    Serial.println(";   ");
+    Serial.print("Температура воздуха=");
+    Serial.print(temphum.temperature);
+    Serial.print("C;  ");
+    Serial.print("Влажность воздуха=");
+    Serial.print(temphum.humidity);
+    Serial.println("%;   ");*/
+
   lcd.setCursor(0, 0);
   lcd.print("Air:T,C=" );
   lcd.setCursor(8, 0);
@@ -200,7 +226,7 @@ void loop() {
   }
   if (temphum.temperature >= 40) {
     if (flgERRHiTemp == false) {
-      sms(String("Attention: High Temperature"), String("+7926*******"));
+      sms(String("Attention: High Temperature"), String(telnum));
       flgERRHiTemp = true;
     }
   }
@@ -230,17 +256,17 @@ void loop() {
     if (inputString.indexOf("LIGHT_ON") > -1) { // Проверяем полученные данные, если ON_1 включаем реле 1
       digitalWrite(LED, HIGH);
       flgManualSvet = true;
-      //sms(String("LIGHT - ON"), String("+7926*******"));
+      //sms(String("LIGHT - ON"), String(telnum));
 
     } // Отправка SMS
     if (inputString.indexOf("LIGHT_OFF") > -1) { // Проверяем полученные данные, если OFF_1 выклюем реле 1
       digitalWrite(LED, LOW);
       flgManualSvet = false;
-      //sms(String("LIGHT - OFF"), String("+7926*******"));
+      //sms(String("LIGHT - OFF"), String(telnum));
     }// Отправка SMS
     delay(50);
     if (inputString.indexOf("INFO") > -1) {     // Проверяем полученные данные
-      sms(String("AirTemp: " + String(temphum.temperature) + " *C " + " AirHum: " + String(temphum.humidity) + " % " + " WaterTemp " + String(ds.getTempCByIndex(0)) + " *C " + " SoilHum " + String(itogpochv) + " %"), String("+7926*******")); // Отправка SMS
+      sms(String("AirTemp: " + String(temphum.temperature) + " *C " + " AirHum: " + String(temphum.humidity) + " % " + " WaterTemp " + String(ds.getTempCByIndex(0)) + " *C " + " SoilHum " + String(itogpochv) + " %"), String(telnum)); // Отправка SMS
     }
     if (inputString.indexOf("DEMO") > -1) {
       digitalWrite(DIR_1, HIGH);
@@ -315,34 +341,40 @@ void loop() {
     }
 
     if (inputString.indexOf("SOIL_HUM") > -1) { //Влажность почвы
-      sms(String("SoilHum " + String(itogpochv) + " %"), String("+7926*******"));
+      sms(String("SoilHum " + String(itogpochv) + " %"), String(telnum));
     }
 
     if (inputString.indexOf("TEMPHUMA") > -1) { //Температура и влажность воздуха
-      sms(String("AirTemp: " + String(temphum.temperature) + " *C " + " AirHum: " + String(temphum.humidity) + " % "), String("+7926*******"));
+      sms(String("AirTemp: " + String(temphum.temperature) + " *C " + " AirHum: " + String(temphum.humidity) + " % "), String(telnum));
     }
 
     if (inputString.indexOf("W_LEVEL") > -1) { //Уровень воды
       if ((watern > 700) and (waterv > 700))
       {
-        sms(String("HIGH"), String("+7926*******"));
+        sms(String("HIGH"), String(telnum));
       }
       if ((watern > 700) and (waterv < 700))
       {
-        sms(String("Medium"), String("+7926*******"));
+        sms(String("Medium"), String(telnum));
       }
       else {
-        sms(String("LOW"), String("+7926*******"));
+        sms(String("LOW"), String(telnum));
       }
     }
 
     if (inputString.indexOf("W_T") > -1) { //Температура воды
-      sms(String(" WaterTemp " + String(ds.getTempCByIndex(0)) + " *C "), String("+7926*******"));
+      sms(String(" WaterTemp " + String(ds.getTempCByIndex(0)) + " *C "), String(telnum));
     }
 
     if (inputString.indexOf("LAST_P") > -1) { //Последний полив
-      sms(String(dattomarus), String("+7926*******"));
+      sms(String(dattomarus), String(telnum));
     }
+
+    if (inputString.indexOf("SLIV") > -1) { //Слив воды из емкости в ручном режиме
+      digitalWrite(POMPA, HIGH);
+      delay(100000);
+    }
+    
     if (inputString.indexOf("OK") == -1) {
       mySerial.println("AT+CMGDA=\"DEL ALL\"");
       delay(1000);
